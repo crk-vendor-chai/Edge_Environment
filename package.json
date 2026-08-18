@@ -1,0 +1,51 @@
+{
+  "name": "edge_environment",
+  "version": "1.0.0",
+  "description": "Edge Environment setting for CHAI project - main server(js)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "backend": "nodemon server/index.js",
+    "frontend": "npm run start --prefix client",
+    "dev": "concurrently \"npm run backend\" \"npm run start --prefix client\"",
+    "test": "node server/test/MqttReboot.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CHAI-Student/Edge_Environment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/CHAI-Student/Edge_Environment/issues"
+  },
+  "homepage": "https://github.com/CHAI-Student/Edge_Environment#readme",
+  "dependencies": {
+    "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "eventsource": "^4.1.0",
+    "express": "^4.22.1",
+    "form-data": "^4.0.5",
+    "glob": "^13.0.6",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "minio": "^8.0.6",
+    "mongoose": "^9.1.3",
+    "mqtt": "^5.14.1",
+    "multer": "^2.0.2",
+    "pino": "^10.1.1",
+    "pm2": "^6.0.14",
+    "serialport": "^13.0.0",
+    "uuid": "^13.0.0",
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11"
+  }
+}

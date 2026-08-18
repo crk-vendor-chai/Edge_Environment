@@ -1,0 +1,17 @@
+/node_modules
+/build
+
+
+
+
+.DS_Store
+.env
+
+npm-debug.log*
+yarn-debug.kog*
+yarn-error.log*
+
+.vscode
+*.log
+*.mp4
+*.avi
