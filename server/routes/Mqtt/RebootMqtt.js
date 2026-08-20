@@ -27,16 +27,6 @@ const { ProductList } = require("../RestAPI/ProductList");
 const { TrainingStore } = require("../RestAPI/TrainingStore");
 const { getProcessing } = require("../RestAPI/PaymentProcessing");
 
-// const {
-//   fetchCurrentDoorState,
-// } = require("./AckCollect");
-
-// const {
-//   DeadboltStatusAPI,
-//   LoadcellStatusAPI,
-//   CameraStatusAPI,
-// } = require("./HealthMqtt");
-
 const ENV_FILE_PATH = path.resolve(__dirname, "../../.env");
 const REBOOT_FLAG = path.resolve(__dirname, "../../log/reboot.flag");
 
@@ -1657,24 +1647,6 @@ async function RebootMqtt() {
             rebooting = false;
             return;
           }
-
-          /*
-           * 상태가 정상이 아닐 때 업데이트를
-           * 중단하려면 아래 코드를 활성화합니다.
-           */
-          // const healthOk =
-          //   await isDeviceSensorsHealthy();
-
-          // console.log(
-          //   `[ModelEmbedding] health result: ` +
-          //   healthOk
-          // );
-
-          // if (!healthOk) {
-          //   throw new Error(
-          //     "Product collection health check failed"
-          //   );
-          // }
 
           const trainedModelFolders =
             await listTrainedModelFolders();
