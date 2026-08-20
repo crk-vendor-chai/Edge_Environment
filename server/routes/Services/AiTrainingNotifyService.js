@@ -22,18 +22,7 @@ async function notifyTrainingStore({
   if (!divisionIdx) throw new Error("divisionIdx is required");
   if (!deviceIdx) throw new Error("deviceIdx is required");
 
-  // const res = await TrainingStore({
-  //   productIdx,
-  //   product_eng_name: productEngName,
-  //   training_status: trainingStatus,
-  // });
-
   const productMap = new Map();
-
-  // productMap.set(String(productIdx), {
-  //   product_idx: productIdx,
-  //   product_eng_name: productEngName,
-  // });
 
   // IF07에 전달할 상품 및 학습 대상 장비 정보 구성
   productMap.set(String(productIdx), {
