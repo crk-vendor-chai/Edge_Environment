@@ -46,7 +46,6 @@ async function callApiToControlDeadbolt(targetState) {
     }, {
       timeout: 5000 // 5초 타임아웃
     });
-    // console.log(response)
 
     // API 응답 확인
     const rawFinalState = response.data.state;
