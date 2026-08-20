@@ -18,10 +18,6 @@ const productUploadSchema = mongoose.Schema({
     productIdx: {
         type: String,
     },
-    // //PNT에 등록된 상품 이름(한글)
-    // productName: {
-    //     type: String,
-    // },
     //PNT에 등록된 상품 카테고리
     categoryIdx: {
         type: String,
@@ -93,7 +89,6 @@ const productUploadSchema = mongoose.Schema({
 productUploadSchema.index({ productIdx: 1, productEngName: 1 }, { unique: true });
 productUploadSchema.index({ trainProductIdx: 1 }, { unique: true });
 
-// const ProductUpload = mongoose.model('ProductUpload', productUploadSchema);
 const ProductUpload = mongoose.model('ProductUpload', productUploadSchema, 'ProductsList');
 
 module.exports = { ProductUpload }
