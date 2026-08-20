@@ -63,9 +63,6 @@ function createMqttClient() {
 
     // 재연결 주기(ms). 운영에선 1000~5000 정도 권장
     reconnectPeriod: 2000,
-
-    // TLS 관련 필요 시:
-    // rejectUnauthorized: true,
   };
 
   client = mqtt.connect(config.mqttURL, options);
@@ -83,7 +80,6 @@ function createMqttClient() {
   client.on("offline", () => console.log("[MQTT] offline"));
   client.on("close", () => console.log("[MQTT] close"));
   client.on("end", () => console.log("[MQTT] end"));
-  // client.on("error", (err) => console.error("[MQTT] error:", err?.message || err));
   client.on("error", (err) => { console.error("[MQTT] error:", err?.message || err);
     if (!internetErrorVoiceInterval) {
       playInternetErrorVoice();
