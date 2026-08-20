@@ -14,12 +14,6 @@ const { getClient } = require("./MqttClient");
 const { getProcessing } = require("../RestAPI/PaymentProcessing");
 const { v4: uuidv4 } = require("uuid");
 
-// 토큰 prefix로 결제 타입 판단
-// function getCardMethod(tokenId = "") {
-//   if (tokenId.startsWith("SPAYKEY")) return "S"; // Samsung Pay
-//   if (tokenId.startsWith("VANKEY")) return "N";  // Credit Card
-// }
-
 // IF_DATE 형식(yyyyMMddHHmmss)의 timestamp 문자열 생성
 function formatIfDate(d = new Date()) {
     const pad = (n) => String(n).padStart(2, '0');
@@ -44,30 +38,7 @@ function Repayment() {
     }
 
     console.log("[REPAY] Subscribe granted:", granted);
-    // console.log(`[DoorCollect] Subscribed: ${subTopic}`);
   });
-
-  // const client = getClient();
-
-  // const subscribeRepayment = () => {
-  //   console.log("[REPAY] subscribing:", repaymentSub);
-
-  //   client.subscribe(repaymentSub, { qos: 1 }, (err, granted) => {
-  //     if (err) {
-  //       console.error("[REPAY] Subscribe Error:", err.message);
-  //       return;
-  //     }
-
-  //     console.log("[REPAY] subscribed:", granted);
-  //   });
-  // };
-
-  // if (client.connected) {
-  //   subscribeRepayment();
-  // } else {
-  //   console.log("[REPAY] MQTT Connected");
-  //   };
-
 
   client.on("message", async (topic, message) => {
     if (topic !== repaymentSub) return;
@@ -81,7 +52,6 @@ function Repayment() {
 
     if (reqData.request_type == "CANCEL") {
       console.log("[CANCEL] response data:", payload);
-      
 
       // 진행 중이면 취소 불가 ACK
       if (getProcessing()) {
@@ -111,9 +81,6 @@ function Repayment() {
         });
         return;
       }
-
-      // token_id 로 카드 방식 결정 --> 불가능 다르지가 않음
-      // const cardMethod = getCardMethod(reqData.token_id);
 
       let cancelEndpoint = "";
       let cancelPayload = {};
@@ -302,9 +269,6 @@ function Repayment() {
         });
         return;
       }
-
-      // token_id 로 신용카드가 맞는지 확인
-      // const cardMethod = getCardMethod(reqData.token_id);
       //승인 후 취소 방식 채택
       if (reqData.payment_mode === "CARD") {
         const oldToken = reqData.org_token_id || reqData.token_id;
@@ -321,7 +285,6 @@ function Repayment() {
             {
               // amount: String(newApprovePrice),
               amount: '5',
-              // items: reqData.items,
               items: reqData.items.map(item => ({
                 ...item,
                 name: String(item.name || "").slice(0, 5),
