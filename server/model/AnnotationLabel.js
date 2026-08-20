@@ -45,7 +45,6 @@ function stripMongoId(doc, ret) {
 annotationLabelSchema.set("toJSON", { transform: stripMongoId });
 annotationLabelSchema.set("toObject", { transform: stripMongoId });
 
-// const ProductUpload = mongoose.model('ProductUpload', productUploadSchema);
 const AnnotationLabel = mongoose.model('AnnotationLabel', annotationLabelSchema, 'AnnotationLabel');
 
 module.exports = { AnnotationLabel }
