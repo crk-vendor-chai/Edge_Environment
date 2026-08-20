@@ -8,7 +8,6 @@
 const axios = require("axios");
 const config = require("../../config/dev");
 const { v4: uuidv4 } = require("uuid");
-// const { divisionIdx } = require("../../config/prod");
 
 let currentTrainingStatus = null;
 
@@ -31,19 +30,8 @@ async function TrainingStore(productMap, trainingStatus) {
         "MAKE TRAINING STORE FOR IF07::::",
         productMap, trainingStatus
     );
-    // console.log(`MAKE TRAINING STORE FOR IF07:::: ${productIdx}, ${product_eng_name}, ${training_status}`)
 
     const normalizedTrainingStatus = String(trainingStatus);
-
-    // const productList = Array.from(productMap.values()).map(
-    //         (product) => ({
-    //             division_idx: config.divisionIdx,
-    //             device_idx: config.deviceIdx,
-    //             product_idx: String(product.product_idx),
-    //             product_eng_name:product.product_eng_name,
-    //             training_status:normalizedTrainingStatus,
-    //         })
-    //     );
 
     try {
          /*
@@ -92,11 +80,6 @@ async function TrainingStore(productMap, trainingStatus) {
             },
             DATA: {
                 product_list: productList,
-                // product_list: [{
-                //     product_idx: String(productIdx),
-                //     product_eng_name: product_eng_name,
-                //     training_status: String(training_status)
-                // }],
             }
         };
 
