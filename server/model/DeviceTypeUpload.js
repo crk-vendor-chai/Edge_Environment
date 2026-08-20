@@ -76,7 +76,6 @@ const DeviceTypeUploadSchema = mongoose.Schema({
 
 DeviceTypeUploadSchema.index({ brunchName: 1 }, { unique: true });
 
-// const ProductUpload = mongoose.model('ProductUpload', productUploadSchema);
 const DeviceTypeUpload = mongoose.model('DeviceTypeUpload', DeviceTypeUploadSchema, 'DeviceTypeList');
 
 module.exports = { DeviceTypeUpload }
