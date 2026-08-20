@@ -16,5 +16,4 @@ function setProcessing(v) {
   isProcessing = v;
 }
 
-// export default { getProcessing, setProcessing };
 module.exports = { getProcessing, setProcessing };
