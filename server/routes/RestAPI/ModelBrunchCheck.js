@@ -58,29 +58,3 @@ async function ModelBrunchCheck({
 }
 
 module.exports = { ModelBrunchCheck };
-
-// if (require.main === module) {
-//   (async () => {
-//     try {
-//       console.log("[RestAPIClient] standalone start");
-      
-//       process.env.JWT_TOKEN = token;
-//       process.env.JWT_TOKEN_AT = Date.now().toString();
-//       console.log("[RestAPIClient] JWT_TOKEN set");
-
-//       // REST API 호출
-//       const data = await ModelBrunchEdit({
-//         division_idx: config.divisionIdx,
-//       });
-
-//       console.log("[RestAPIClient] response:");
-//       console.dir(data, { depth: null });
-//     } catch (err) {
-//       console.error("[RestAPIClient] error:");
-//       console.error(err.message);
-//       if (err.response) {
-//         console.error(err.response.data);
-//       }
-//     }
-//   })();
-// }
