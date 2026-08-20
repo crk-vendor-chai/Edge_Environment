@@ -41,13 +41,10 @@ async function devAutoLogin() {
 
   const token = r.data.accessToken
 
-  // console.log("[LOGIN] pid=", process.pid, "JWT_TOKEN set");
-
   if (!token) return null;
   else {
     cachedToken = token;
     cachedRaw = r.data;
-    // console.log('Token', cachedToken);
     process.env.JWT_TOKEN = cachedToken;
     process.env.JWT_TOKEN_AT = Date.now().toString(); // (선택) 발급시각
     console.log('jwtToken', process.env.JWT_TOKEN);
