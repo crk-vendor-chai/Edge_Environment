@@ -181,7 +181,6 @@ async function getHealthStatus(hasLoadcell) {
   return {
     camera_status: cameraRaw === "09" ? "1" : "0",
     deadbolt_status: deadboltRaw === "19" ? "1" : "0",
-    // loadcell_status: useLoadcell ? (loadcellRaw === "29" ? "1" : "0") : "9",
     loadcell_status: loadcellRaw === "29" ? "1" : "0",
   };
 }
@@ -252,7 +251,6 @@ async function DoorCollect() {
     }
 
     console.log("[DoorCollect] Subscribe granted:", granted);
-    // console.log(`[DoorCollect] Subscribed: ${subTopic}`);
   });
 
   client.on("message", async (topic, message) => {
