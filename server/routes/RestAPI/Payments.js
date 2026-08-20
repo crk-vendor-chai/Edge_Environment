@@ -95,7 +95,6 @@ async function sendCardErrorToPNT(errorCode, token, CardMethod, state = "1") {
         headers: {
           ...form.getHeaders(),
           Authorization: `Bearer ${jwtToken}`,
-          // "Content-Type": "application/json",
         },
         timeout: 30000,
         maxBodyLength: Infinity,
@@ -277,7 +276,6 @@ async function modelPooling(productData, opts = {}) {
           const res = await axios.post(`${config.modelApi}/api/judge/multi-zone`, productData, { timeout: 3000 });
           
           if (res.data.status === 400) {
-              // throw new Error("400 Bad Request");
               console.log("400 Bad Request")
               return;
           }
@@ -285,7 +283,6 @@ async function modelPooling(productData, opts = {}) {
       } catch (error) {
           // 400 에러면 명확하게 에러 던짐
           if (error.response && error.response.status === 400) {
-              // throw new Error("BLOCK_400");
               console.log("400 Bad Request")
               return;
           }
@@ -297,7 +294,6 @@ async function modelPooling(productData, opts = {}) {
 
   // [모드 2] 반복 추론 모드 (기존 로직)
   while (true) {
-    // if (Date.now() - started > timeoutMs) throw new Error("Model inference timeout");
     if (Date.now() - started > timeoutMs) {
       console.warn("[Model] timeout. stop modelPooling only");
       return;
@@ -306,14 +302,12 @@ async function modelPooling(productData, opts = {}) {
     try {
       const res = await axios.post(`${config.modelApi}/api/judge/multi-zone`, productData, { timeout: 30_000 });
       const data = res.data;
-      // console.log('[MODEL-RESPONSE]', data);
 
       if (data.success === true) {
         return data;
       }
       // 반복 중 400이 뜨면 중단
       if (data.status === 400) { 
-          // throw new Error("Model rejected request (Status 400)");
           console.log("Model rejected request (Status 400)")
           return;
       }
@@ -425,14 +419,11 @@ async function init() {
 
     // 일반 카드 토큰 수신
     TokenHandler.addEventListener('tx_token_generate', (event) => {
-        // e {"status": "Y", "vankey_hash": "0027057596824048aafeea42", "card_info": {"SERIAL_NUMBER": "", "ACQUIRER_ID": "003", "ACQUIRER_NAME": "\ud558\ub098\uce74\ub4dc", "ISSUER_ID": "003", "ISSUER_NAME": "\ud1a0\uc2a4\ubc45\ud06c\uce74\ub4dc", "MERCHANT_ID": "00915100663"}, "response_code": 0, "message": ""}
         try {
             const payload = JSON.parse(event.data);
             console.log('e', payload)
             paymentToken = payload.vankey_hash;
-            // const CardMethod = token.startsWith("SPAYKEY") ? "S" : "N"
-            CardMethod = 'N'
-            // S = 삼성페이, N = 일반카드
+            CardMethod = 'N' // S = 삼성페이, N = 일반카드
             console.log('[CardToken] Token received:', paymentToken);
             
             // 토큰을 받으면 프로세스 시작 (비동기 호출)
@@ -549,7 +540,6 @@ async function startProcess(token, CardMethod) {
       // timeout 5s)에 들어가면 타임아웃으로 세션이 거절될 수 있다
       await LoadcellZeroset.waitForIdle();
       const CameraStatus = await CameraStatusAPI()
-      // let CardTerminalStatus = await CardTerminalStatusAPI()
       const CardTerminalStatus = '39'
       let DeadboltStatus = await DeadboltStatusAPI()
       const LoadcellStatus = await LoadcellStatusAPI()
@@ -602,14 +592,11 @@ async function Payments(token, CardMethod) {
     const divisionIdx = config.divisionIdx;
     const deviceIdx = config.deviceIdx;
 
-    // [3] 상품정보 조회
+    // 상품정보 조회
     const productList = await ProductList({
         division_idx: divisionIdx,
-        // device_idx: null
         device_idx: deviceIdx, /// 성능평가용 장비 한정 테스트
     });
-    // console.log("[ProductList] Data Loading Complete:", productList);
-
 
     // 상품 정보 추출
     let productData = []
@@ -645,12 +632,11 @@ async function Payments(token, CardMethod) {
         console.log("Validation Warning:", error.message);
     }
   
-    // [4] 카메라 폴더 생성
-    // const LOCAL_ROOT = path.resolve(process.cwd()); 
+    // 카메라 폴더 생성
     const { folderName, folderPath } = MakeCameraFolder();
     console.log("[Camera] Folder Created:", folderPath, 'name:', folderName);
 
-    // [5] 문 열기 (OPEN)
+    // 문 열기 (OPEN)
     const openResult = await callApiToControlDeadbolt("OPEN");
     if (openResult !== "OPEN" && openResult !== 'UNLOCK') throw new Error(`Failed to open door. Status: ${openResult}`) 
 
@@ -660,14 +646,14 @@ async function Payments(token, CardMethod) {
     // 문 열림 알림 시작 (1분 경과 시부터 음성 안내)
     startDoorOpenMonitor(Date.now());
 
-    // [6] 상단 카메라 ON 요청
+    // 상단 카메라 ON 요청
     await requestTopCameraON({ save_path: folderPath});
 
-    // [7] 로드셀 무게 정보 실시간 전달
+    // 로드셀 무게 정보 실시간 전달
     
-    // [8] 로드셀 무게 변화 감지
+    // 로드셀 무게 변화 감지
 
-    // [9] 데드볼트 상태 (close) (sensor → node) + (상단 카메라 off + folder snapshot) 저장 (node → camera python)
+    // 데드볼트 상태 (close) (sensor → node) + (상단 카메라 off + folder snapshot) 저장 (node → camera python)
     try {
       // 1. deadbolt가 닫힐 때까지 대기
       const closeEventData = await waitForDeadboltClose();
@@ -710,7 +696,7 @@ async function Payments(token, CardMethod) {
         return; // 에러 시 중단
     }
 
-    // [10] 모델 서버 추론 결과 수신 후 결제 승인 처리
+    // 모델 서버 추론 결과 수신 후 결제 승인 처리
     // product_idx 기준 상품 마스터 map 생성 (승인 items 구성용)
     const productMap = new Map(
         productData.map(p => [
@@ -723,7 +709,6 @@ async function Payments(token, CardMethod) {
         inferenceResult = await inferencePromise;
         console.log("[Model] Inference Result:", inferenceResult);
         console.log('card method', CardMethod)
-        // stopPolling = true;
         if (inferenceResult.success == false || inferenceResult.status == 'error'){
           console.error("[PAYMENT] Model inference failed or error occurred. Process aborted.");
           return;
@@ -747,13 +732,7 @@ async function Payments(token, CardMethod) {
         if (inferenceResult.success == true && inferenceResult.products){
           // 결제 승인 요청
           const finalAmount = inferenceResult.totalPrice;
-          // console.log('inferenceResult', inferenceResult)
           const products = inferenceResult.products
-          // const items = products.map(product => ({
-          //   name: product.name.slice(0, 5),
-          //   quantity: Number(product.count),
-          //   total_price: Number(product.price) * Number(product.count || 1)
-          // }));
           const items = products.map(product => {
             const master = productMap.get(String(product.productIdx));
             if (!master) {
@@ -769,13 +748,6 @@ async function Payments(token, CardMethod) {
           });
           // 삼성 페이
           if (CardMethod === "S") {
-            // paymentResponse = await axios.post(`${config.cardTerminalApi}/payment/samsung-pay/approve`, {
-            //         // amount: string(finalAmount),
-            //         amount: '5',
-            //         authorization_type: "PURCHASE",
-            //         items,
-            //         // display_message: "SamsungPay Payment"
-            // });
             try {
               paymentResponse = await axios.post(
                 `${config.cardTerminalApi}/payment/samsung-pay/approve`,
@@ -785,9 +757,6 @@ async function Payments(token, CardMethod) {
                   items,
                   authorization_type: "PURCHASE",
                 },
-                // {
-                //   timeout: 60000
-                // }
               );
             } catch (error) {
               const pubCode = 1
@@ -813,12 +782,6 @@ async function Payments(token, CardMethod) {
           }
           // 일반 카드
           else if (CardMethod === "N"){
-            // paymentResponse = await axios.post(`${config.cardTerminalApi}/payment/token/approve`, {
-            //         // amount: String(finalAmount),
-            //         amount: '5',
-            //         items,
-            //         vankey_hash: String(paymentToken || token)
-            // });
             try {
               paymentResponse = await axios.post(
                 `${config.cardTerminalApi}/payment/token/approve`,
@@ -861,8 +824,6 @@ async function Payments(token, CardMethod) {
           }
           // 결제 결과 처리
           if (paymentResponse && paymentResponse.status === 200) {
-              // const paymentAt = new Date()
-              // 형식: "payment_at": "2026-02-21T00:46:59.000",
               const paymentAt = new Date().toISOString().replace("Z", "");
               console.log("[PAYMENT] Success:", paymentResponse.data, token);
               
