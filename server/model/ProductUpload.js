@@ -18,10 +18,6 @@ const productUploadSchema = mongoose.Schema({
     productIdx: {
         type: String,
     },
-    // //PNT에 등록된 상품 이름(한글)
-    // productName: {
-    //     type: String,
-    // },
     //PNT에 등록된 상품 카테고리
     categoryIdx: {
         type: String,
@@ -43,7 +39,6 @@ const productUploadSchema = mongoose.Schema({
         모델 학습/검증 완료 후 CI/CD 배포 완료: 7
         모델 검증 실패, 재학습(데이터셋 재수집) 필요: 8
     */
-   // 제거
     trainingStatus: {
         type: String,
     },
@@ -93,7 +88,6 @@ const productUploadSchema = mongoose.Schema({
 productUploadSchema.index({ productIdx: 1, productEngName: 1 }, { unique: true });
 productUploadSchema.index({ trainProductIdx: 1 }, { unique: true });
 
-// const ProductUpload = mongoose.model('ProductUpload', productUploadSchema);
 const ProductUpload = mongoose.model('ProductUpload', productUploadSchema, 'ProductsList');
 
 module.exports = { ProductUpload }
