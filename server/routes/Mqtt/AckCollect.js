@@ -213,11 +213,6 @@ async function fetchCurrentDoorState() {
 // camera/deadbolt/loadcell health check와 현재 door 상태를 병렬로 조회하고,
 // 세 장치가 모두 정상 코드(09/19/29)인지 여부(isSuccess)를 함께 반환한다.
 async function ProductCollectionHealth() {
-  // const CameraStatus = await CameraStatusAPI();
-  // const DeadboltHealth = await DeadboltStatusAPI();
-  // const LoadcellHealth = await LoadcellStatusAPI();
-  // const CurrentDoorState = await fetchCurrentDoorState();
-
   const [
     CameraStatus,
     DeadboltHealth,
@@ -320,7 +315,6 @@ async function fetchRecordedLoadcellData() {
 
 // 3) 시계열에서 최종 무게 산출 (정책에 따라 골라야 함, 아래는 한 가지 예)
 function computeProductWeight(logs) {
-  //
   if (!Array.isArray(logs) || logs.length === 0) return 0;
 
   const CHANNEL_INDEX = 2;      // 3번째 로드셀
@@ -354,17 +348,6 @@ function computeProductWeight(logs) {
   }
 
   const avg = values.reduce((sum, v) => sum + v, 0) / values.length;
-
-  // console.log("[Loadcell] weight window:", {
-  //   recordingStartTime: new Date(recordingStartTime).toISOString(),
-  //   windowStartTime: new Date(windowStartTime).toISOString(),
-  //   windowEndTime: new Date(windowEndTime).toISOString(),
-  //   channelIndex: CHANNEL_INDEX,
-  //   sampleCount: values.length,
-  //   min: Math.min(...values),
-  //   max: Math.max(...values),
-  //   avg,
-  // });
 
   // 센서 보증 분해능 5g에 정합 (모델 판정 tolerance도 5g 기준)
   return Math.round(avg / 5) * 5;
@@ -436,8 +419,6 @@ async function uploadFolderToMinio({
     };
   }
 
-  // const foldername = `${safe(productIdx)}_${safe(productEngName)}_${safe(timestamp)}`;
-  // const basePrefix = `productImg/${foldername}`;
   const basePrefix = `productImg/${safe(foldername)}`;
   const folderpath = `s3://${BUCKET}/${basePrefix}/`;
 
@@ -447,7 +428,6 @@ async function uploadFolderToMinio({
     return {
       success: false,
       message: `No files found in folder: ${localPath}`,
-      // foldername,
       basePrefix,
       folderpath,
       filelength: 0,
@@ -573,11 +553,6 @@ async function syncProductMetadata({
   console.log('[MONGODB]storageType', storageType)
   const setOnInsert = {};
 
-  // if (!existing) {
-  //   setOnInsert.trainProductIdx = await getNextTrainProductIdx();
-  //   setOnInsert.createDate = now;
-  //   setOnInsert.eventPromotion = [];
-  // }
   if (!existing) {
     setOnInsert.trainProductIdx = trainProductIdx;
     setOnInsert.createDate = now;
@@ -621,20 +596,6 @@ async function notifyAiTrainingStore(product) {
     JSON.stringify(product, null, 2)
   );
   if (typeof aiNotifyService.notifyTrainingStore === "function") {
-    // console.log(
-    //   '[notifyAiTrainingStore] input:',
-    //   JSON.stringify(product, null, 2)
-    // );
-    // console.log(
-    //   "[aiNotifyService keys]",
-    //   Object.keys(aiNotifyService)
-    // );
-
-    // console.log(
-    //   "[aiNotifyService.notifyTrainingStore source]",
-    //   aiNotifyService.notifyTrainingStore.toString()
-    // );
-
     const payload = {
       productIdx: product.productIdx,
       productEngName: product.productEngName,
@@ -654,11 +615,6 @@ async function notifyAiTrainingStore(product) {
     console.log("[notifyAiTrainingStore -> service payload]", payload);
 
     return aiNotifyService.notifyTrainingStore(payload);
-    // return aiNotifyService.notifyTrainingStore({
-    //   productIdx: product.productIdx,
-    //   productEngName: product.productEngName,
-    //   trainingStatus: product.trainingStatus || "2",
-    // });
   }
 
   if (typeof aiNotifyService.notifyTrainingStoreMany === "function") {
@@ -800,8 +756,6 @@ async function syncDivisionAndDeviceTypeMapping({
 
   await DeviceTypeUpload.updateOne(
     {
-      // divisionIdx,
-      // storageType: normalizedStorageType,
       brunchName
     },
     {
@@ -959,17 +913,11 @@ async function handleStartCollect(reqData, reqSysid) {
   const baseProductPath = path.resolve(process.cwd(), "productImg");
   const productFolder = path.join(baseProductPath, foldername);
 
-  // 카메라별 결과가 섞이지 않도록 서로 다른 하위 폴더에 저장한다.
-  // const camera2Folder = path.join(productFolder, "camera_2");
-  // const camera0Folder = path.join(productFolder, "camera_0");
-
   const session = {
     timestamp,
     foldername,
     trainProductIdx,
     productFolder,
-    // camera2Folder,
-    // camera0Folder,
     productIdx: product_idx,
     productEngName: product_eng_name,
     categoryIdx: category_idx,
@@ -1044,8 +992,6 @@ async function handleStartCollect(reqData, reqSysid) {
     await cameraStartSampling(productFolder, [camera_idx]);
     console.log(`[Collect] ${camera_idx}번 수집 시작`);
 
-    // const health = await ProductCollectionHealth();
-
     publishAck(
     makeAckPayload({
       reqSysid: reqSysid,
@@ -1112,10 +1058,6 @@ async function handleEndCollect(reqData, reqSysid) {
   const doorState = option.doorState;
   console.log('option -------- ', option)
 
-  // 학습 대상 storage type
-  // const hasLoadcell = option.hasLoadcell;
-  // const storageType = option.storageType;
-
   const session = collectSessions.get(String(product_idx));
   console.log('SESSION: ', session)
 
@@ -1155,16 +1097,6 @@ async function handleEndCollect(reqData, reqSysid) {
 
   console.log('Loadcell Weight: ', updateLoadcellWeight)
 
-  // const loadcellWeight = await stopLoadcellRecording();
-
-  // const uploadResult = await uploadFolderToMinio({
-  //   localPath: session.productFolder,
-  //   productIdx: product_idx,
-  //   productEngName: product_eng_name,
-  //   timestamp: session.timestamp,
-  //   deleteAfterUpload: true,
-  // });
-
   // productFolder 아래 camera_2와 camera_0 두 폴더를 재귀적으로 업로드한다.
   // MinIO 구조:
   // productImg/<foldername>/camera_2/...
@@ -1185,15 +1117,12 @@ async function handleEndCollect(reqData, reqSysid) {
   const productDoc = await syncProductMetadata({
     productIdx: product_idx,
     productEngName: product_eng_name,
-    // productName: product_name,
     categoryIdx: category_idx,
     isNew: is_new,
     foldername: uploadResult.foldername,
     folderpath: uploadResult.folderpath,
     filelength: uploadResult.filelength,
     storageType: finalStorageType,
-    // productLoadcellWeight: product_loadcell_weight == null ? updateLoadcellWeight : product_loadcell_weight,
-    // productLoadcellWeight: String(product_loadcell_weight == null ? updateLoadcellWeight : product_loadcell_weight),
     productLoadcellWeight: finalLoadcellWeight,
     trainProductIdx: session.trainProductIdx,
   });
@@ -1207,15 +1136,6 @@ async function handleEndCollect(reqData, reqSysid) {
       storageType: finalStorageType,
       currentProductIdxList: [product_idx],
   });
-
-  /**
-   * AnnotationLabel 동기화
-   */
-  // const annotationResult =
-  //   await syncAnnotationLabels({
-  //     productModel: ProductUpload,
-  //     deleteMissing: false,
-  //   });
 
   let annotationResult = null;
 
@@ -1301,22 +1221,6 @@ async function handleCollectMessage(message) {
 
     console.log("[AckCollect] Request DATA:", reqData);
 
-    // if (String(config.deviceIdx) !== String(device_idx)) {
-    //   console.warn("[AckCollect] device_idx mismatch:", {
-    //     configDeviceIdx: config.deviceIdx,
-    //     requestDeviceIdx: device_idx,
-    //   });
-    //   return;
-    // }
-
-    // if (String(config.divisionIdx) !== String(division_idx)) {
-    //   console.warn("[AckCollect] division_idx mismatch:", {
-    //     configDivisionIdx: config.divisionIdx,
-    //     requestDivisionIdx: division_idx,
-    //   });
-    //   return;
-    // }
-
     if (collect_state === "START") {
       await handleStartCollect(reqData, reqSysid);
       return;
@@ -1334,7 +1238,6 @@ async function handleCollectMessage(message) {
 
     throw new Error(`Unsupported collect_state: ${collect_state}`);
   } catch (error) {
-    // local folder not found가 뜸
     console.error("[AckCollect] Processing Error:", error.message);
 
     const health = await ProductCollectionHealth().catch(() => ({}));
@@ -1569,13 +1472,6 @@ async function handleTrainingCollect(reqData, reqSysid) {
 async function AckCollect() {
 
   client = getClient();
-  // console.log("[AckCollect] BROKER_URL:", BROKER_URL);
-  // console.log("[AckCollect] CMD_TOPIC:", CMD_TOPIC);
-  // console.log("[AckCollect] ACK_TOPIC:", ACK_TOPIC);
-
-  // client.on("connect", () => {
-  //   client.subscribe(SUB_TOPIC);
-  // });
   client.subscribe(SUB_TOPIC, { qos: 1 }, (err, granted) => {
     if (err) {
       console.error("[ACK-COLLECT] Subscribe Error:", err.message);
@@ -1583,7 +1479,6 @@ async function AckCollect() {
     }
 
     console.log("[ACK-COLLECT] Subscribed:", granted);
-    // console.log(`[ACK-COLLECT] Subscribed: ${granted}`);
   });
 
   client.on("message", (topic, message) => {
