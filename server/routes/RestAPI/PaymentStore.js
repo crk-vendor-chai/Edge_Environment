@@ -14,8 +14,6 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 
-// const dummyImg = path.join(__dirname, "../../log/dummyTestImg.png");
-
 // IF 규격(YYYYMMDDHHMMSS)의 날짜 문자열 생성
 function formatIfDate(d = new Date()) {
     const pad = (n) => String(n).padStart(2, '0');
@@ -43,17 +41,6 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
     // console.log("[PNT] productData:", productData);
     console.log("[PNT] inferenceResult.products:", inferenceResult?.products);
     try {
-        // 추후 카메라가 촬영한 영상으로 전송
-        // const camFolderPath = path.join(folderPath, "archival", "cam_0");
-        // const files = fs.readdirSync(camFolderPath);
-        // const mp4 = files.find(f => f.toLowerCase().endsWith(".mp4"));
-        // if (!mp4) {
-        //     throw new Error("No mp4 file found in cam_0 folder");
-        // }
-        // const fullPath = path.join(camFolderPath, mp4);
-        // const fileName = path.basename(fullPath);
-        // const stat = fs.statSync(fullPath);
-
         // 영상
         const camFolderPath = path.join(folderPath, "archival", "cam_0");
         const files = fs.readdirSync(camFolderPath);
@@ -67,15 +54,6 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
         const fileName = path.basename(fullPath);
         const stat = fs.statSync(fullPath);
 
-
-        // 더미 이미지로 전송
-        // if (!fs.existsSync(dummyImg)) {
-        //     throw new Error(`[PNT] Dummy image not found: ${dummyImg}`);
-        // }
-
-        // const fileName = path.basename(dummyImg);
-        // const stat = fs.statSync(dummyImg);
-
         const hasLowConfidence = inferenceResult.products.some(
             p => Number(p.confidence) < 0.2
         );
@@ -83,34 +61,11 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
         const productMap = new Map(
             productData.map(p => [String(p.product_idx), p])
         );
-        
-        // if (fs.existsSync(camFolderPath)) {
-        //     const files = fs.readdirSync(camFolderPath);
-        //     const imageFiles = files.filter(file => /\.(jpg|jpeg|png)$/i.test(file)).slice(0, 2);
-
-        //     paymentImgList = imageFiles.map(file => {
-        //         const filePath = path.join(camFolderPath, file);
-        //         const stats = fs.statSync(filePath);
-                
-        //         // 파일 스트림 첨부
-        //         formData.append('files', fs.createReadStream(filePath), { filename: file });
-
-        //         return {
-        //             file_name: file,
-        //             file_ext: path.extname(file).replace('.', ''),
-        //             file_size: stats.size
-        //         };
-        //     });
-        // } else {
-        //     console.warn(`[PNT] Warning: Image folder not found at ${camFolderPath}`);
-        // }
-
 
         // 결제 데이터 전달
         const external = axios.create({
           baseURL: config.restApi, // https://apichaidev.atcrk.co.kr/api/v1
           timeout: 10000,
-        //   headers: { "Content-Type": "multipart/form-data" },
         });
 
         const now = new Date();
@@ -135,7 +90,6 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     IF_ID: "IF_08",
                     IF_SYSID: uuidv4(),
                     IF_HOST: "CRKPNTCHAI", // 엑셀에는 EDGE라고 적혀있음
-                    // IF_DATE: timestamp,
                     IF_DATE: formatIfDate(),
                 },
                 DATA:{
@@ -170,8 +124,6 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                             sale_price: Number(master.sale_price),
                         };
                     }),
-                    // product_idx: inferenceResult.products.map(p => p.productId).join(","),
-                    // product_count: inferenceResult.products.map(p => p.count).join(","),
                     // 이미지
                     // payment_file_list: [{
                     //     file_name: fileName,
@@ -192,14 +144,12 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     IF_ID: "IF_08",
                     IF_SYSID: uuidv4(),
                     IF_HOST: "CRKPNTCHAI", // 엑셀에는 EDGE라고 적혀있음
-                    // IF_DATE: timestamp,
                     IF_DATE: formatIfDate(),
                 },
                 DATA:{
                     device_idx: config.deviceIdx,
                     division_idx: config.divisionIdx,
                     token_id: CardMethod === 'N' ? token : paymentResponse.vankey,
-                    // token_id: token || paymentResponse.vankey_hash || paymentResponse.vankey,
                     payment_at: formattedDate, // 픽앤탁으로 전송하는 시간
                     approve_at: paymentResponse.authorization_date, // 카드결제가 이루어진 시간
                     approve_type: CardMethod === 'R' ? '2' : (CardMethod === 'S' ? '1' : '0'), // 0=일반카드, 1=삼성페이, 2=RFID
