@@ -613,7 +613,7 @@ async function Payments(token, CardMethod) {
     if (openResult !== "OPEN" && openResult !== 'UNLOCK') throw new Error(`Failed to open door. Status: ${openResult}`) 
 
     // 모델 서버 추론 polling 시작 (비동기 — 문이 닫힌 뒤 결과를 await)
-    const inferencePromise = modelPooling(requestPayload, { intervalMs: 10_000 });
+    const inferencePromise = modelPooling(requestPayload, { intervalMs: 2_000 });
 
     // 문 열림 알림 시작 (1분 경과 시부터 음성 안내)
     startDoorOpenMonitor(Date.now());
