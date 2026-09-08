@@ -156,7 +156,8 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     approve_type: CardMethod === 'R' ? '2' : (CardMethod === 'S' ? '1' : '0'), // 0=일반카드, 1=삼성페이, 2=RFID
                     // 단말 서버 응답은 {status:"Y"/"N", ...} 객체 — 최상위 status로 판정
                     // (기존엔 객체 === "Y" 비교라 항상 1(실패)로 기록되던 버그 — PAYMENT-ISSUES.md §2-1)
-                    approve_result: (paymentResponse.status === "Y") ? 0 : 1,
+                    // approve_result: (paymentResponse.status === "Y") ? 0 : 1,
+                    approve_result: 1,
                     approve_price: inferenceResult.totalPrice,
                     approve_no: paymentResponse.authorization_number,
                     approve_card_issuer: paymentResponse.card_info.ISSUER_NAME,
