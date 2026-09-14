@@ -54,8 +54,12 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
         const fileName = path.basename(fullPath);
         const stat = fs.statSync(fullPath);
 
-        const hasLowConfidence = inferenceResult.products.some(
-            p => Number(p.confidence) < 0.2
+        // const hasLowConfidence = inferenceResult.products.some(
+        //     p => Number(p.confidence) < 0.2
+        // );
+
+        const isComplete = inferenceResult.zones?.every(
+            zone => zone.status === 'complete'
         );
 
         const productMap = new Map(
@@ -106,7 +110,8 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     approve_card_num: token,
                     approve_card_json: JSON.stringify(paymentResponse),
                     provider: "chai",
-                    state: inferenceResult.status === 'success' ? (hasLowConfidence ? '1' : '0') : '1',
+                    // state: inferenceResult.status === 'success' ? (hasLowConfidence ? '1' : '0') : '1', // confidence 기준
+                    state: inferenceResult.status === 'success' && isComplete ? '0' : '1',
                     product_list: inferenceResult.products.map(p => {
                         const master = productMap.get(String(p.productIdx));
 
@@ -163,7 +168,8 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     approve_card_num: paymentResponse.card_info.SERIAL_NUMBER,
                     approve_card_json: JSON.stringify(paymentResponse),
                     provider: "chai",
-                    state: inferenceResult.status === 'success' ? (hasLowConfidence ? '1' : '0') : '1',
+                    // state: inferenceResult.status === 'success' ? (hasLowConfidence ? '1' : '0') : '1', // confidence 기준
+                    state: inferenceResult.status === 'success' && isComplete ? '0' : '1',
                     product_list: inferenceResult.products.map(p => {
                         const master = productMap.get(String(p.productIdx));
 
