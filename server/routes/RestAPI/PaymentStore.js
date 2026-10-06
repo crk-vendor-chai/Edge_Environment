@@ -157,7 +157,7 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     token_id: CardMethod === 'N' ? token : paymentResponse.vankey,
                     payment_at: formattedDate, // 픽앤탁으로 전송하는 시간
                     approve_at: paymentResponse.authorization_date, // 카드결제가 이루어진 시간
-                    approve_type: CardMethod === 'R' ? 2 : (CardMethod === 'S' ? 1 : 0), // 0=일반카드, 1=삼성페이, 2=RFID
+                    approve_type: CardMethod === 'R' ? '2' : (CardMethod === 'S' ? '1' : '0'), // 0=일반카드, 1=삼성페이, 2=RFID
                     // 단말 서버 응답은 {status:"Y"/"N", ...} 객체 — 최상위 status로 판정
                     // (기존엔 객체 === "Y" 비교라 항상 1(실패)로 기록되던 버그 — PAYMENT-ISSUES.md §2-1)
                     // approve_result: (paymentResponse.status === "Y") ? 0 : 1,
