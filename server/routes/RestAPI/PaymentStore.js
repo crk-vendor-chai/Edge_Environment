@@ -102,7 +102,7 @@ async function sendToPNT(paymentResponse, inferenceResult, folderPath, paymentAt
                     token_id: token,
                     payment_at: formattedDate,
                     approve_at: rfidTime,
-                    approve_type: CardMethod === 'R' ? 2 : (CardMethod === 'S' ? 1 : 0), // 0=일반카드, 1=삼성페이, 2=RFID
+                    approve_type: CardMethod === 'R' ? '2' : (CardMethod === 'S' ? '1' : '0'), // 0=일반카드, 1=삼성페이, 2=RFID
                     approve_result: 1,
                     approve_price: inferenceResult.totalPrice,
                     approve_no: token,
