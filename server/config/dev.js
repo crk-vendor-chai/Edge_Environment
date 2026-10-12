@@ -31,19 +31,19 @@ module.exports = {
     // divisionIdx: 'DI17846216186054023', // 냉장 테스트용 (한양대점)
     divisionIdx: 'DI17866730866133136', // 냉장 테스트용 (ITBT점)
     // divisionIdx: 'DI17905727881347574', // 냉장 CJFW
-    
-    
+
+
     // 냉장 장비 고유번호
     // deviceIdx: 'DE17560868094789999',
     // deviceIdx: 'DE17683631997086480',
     // 테스트용
     // deviceIdx: 'DE17790815108130388', // 냉장 학습용
     // deviceIdx: 'DE17798461293792881', // 냉장 통테용
-    // deviceIdx: 'DE17815818605453073', // 냉동 테스트용 
+    // deviceIdx: 'DE17815818605453073', // 냉동 테스트용
     // deviceIdx: 'DE17846226165932307',  // 냉장 테스트용 (한양대점)
     deviceIdx: 'DE17866760140506643',  // 냉장 테스트용 (ITBT점)
     // deviceIdx: 'DE17905728349982070', // 냉장 CJFW
-    
+
     // PNT RestAPI 연결
     restApi: 'https://apichaidev.atcrk.co.kr/api/v1',
     userId: 'chaitest',   // 냉장용
