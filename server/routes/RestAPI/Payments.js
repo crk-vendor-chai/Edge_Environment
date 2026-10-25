@@ -754,7 +754,8 @@ async function Payments(token, CardMethod) {
                 {
                   // amount: string(finalAmount),
                   amount: '5',
-                  items,
+                  // items,
+                  items: items.slice(0, 5),
                   authorization_type: "PURCHASE",
                 },
               );
@@ -788,7 +789,8 @@ async function Payments(token, CardMethod) {
                 {
                   // amount: string(finalAmount),
                   amount: '5',
-                  items,
+                  // items,
+                  items: items.slice(0, 5),
                   vankey_hash: String(paymentToken || token)
                 }
               );

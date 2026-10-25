@@ -292,7 +292,7 @@ function Repayment() {
             {
               // amount: String(newApprovePrice),
               amount: '5',
-              items: reqData.items.map(item => ({
+              items: reqData.items.slice(0, 5).map(item => ({
                 ...item,
                 name: String(item.name || "").slice(0, 5),
               })),
