@@ -3,6 +3,12 @@ Edge Environment setting for CHAI project - main server(js)
 
 ---
 
+### 요구 사항 (Requirements)
+- **Node.js** `>= 24.22.1` (24.x LTS, 2026-10 보안 패치 반영 버전)
+  - 2026-10-21 Node.js 보안 릴리스(CVE-2026-105482, CVE-2026-105483, CVE-2026-106069, CVE-2026-111497 등)에 대응하기 위해 최소 버전을 고정했습니다.
+  - `nvm` 사용 시: 저장소 루트에서 `nvm use` (`.nvmrc` 참조)
+
+---
 
 ### Commit message
 **⚙️ Type**
