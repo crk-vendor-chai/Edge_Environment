@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Edge Environment setting for CHAI project - main server(js)",
   "main": "index.js",
+  "engines": {
+    "node": ">=24.22.1 <25.0.0"
+  },
   "scripts": {
     "start": "node server/index.js",
     "backend": "nodemon server/index.js",
