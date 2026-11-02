@@ -87,16 +87,16 @@ async function DiskStatusAPI() {
 }
 
 let CardErrorState = null;
-let deviceNoticeAttemptedState = null;
+let lastNoticeCommandState = null;
 const DEVICE_ERROR_NOTICE = "장비에 문제가 생겼습니다";
 
-// Avoid repeating the same notice command every health-check cycle if the terminal rejects it.
-async function updateDeviceNotice(hasDeviceError) {
-  if (deviceNoticeAttemptedState === hasDeviceError) return;
-  deviceNoticeAttemptedState = hasDeviceError;
+// Notice commands are separate from GET /status and are sent only when device health changes.
+async function updateDeviceNotice(shouldShowNotice) {
+  if (lastNoticeCommandState === shouldShowNotice) return;
+  lastNoticeCommandState = shouldShowNotice;
 
   try {
-    const response = hasDeviceError
+    const response = shouldShowNotice
       ? await axios.put(`${config.cardTerminalApi}/status/notice`, {
           message: DEVICE_ERROR_NOTICE,
         }, { timeout: 5000 })
@@ -105,8 +105,8 @@ async function updateDeviceNotice(hasDeviceError) {
         });
 
     if (Number(response.data?.response_code) !== 0) {
-      console.error("[CARD-DEVICE] Notice command rejected:", {
-        requestedState: hasDeviceError ? "set" : "clear",
+      console.warn("[CARD-DEVICE] Notice request PC response:", {
+        requestedState: shouldShowNotice ? "set" : "clear",
         httpStatus: response.status,
         response: response.data,
       });
@@ -114,12 +114,12 @@ async function updateDeviceNotice(hasDeviceError) {
     }
 
     console.log(
-      `[CARD-DEVICE] Notice ${hasDeviceError ? "set" : "cleared"}:`,
+      `[CARD-DEVICE] Notice request sent (${shouldShowNotice ? "set" : "clear"}):`,
       response.data
     );
   } catch (error) {
     console.error(
-      `[CARD-DEVICE] Failed to ${hasDeviceError ? "set" : "clear"} notice:`,
+      `[CARD-DEVICE] Notice request transport failure (${shouldShowNotice ? "set" : "clear"}):`,
       error.response?.data || error.message
     );
   }
@@ -415,6 +415,7 @@ async function HealthMqtt() {
         DeadboltStatus !== '19' ||
         CameraStatus !== '09' ||
         EdgePCStatus !== '49';
+      // 30-second GET /status remains a status poll; notice requests are transition-triggered.
       await updateDeviceNotice(hasDeviceError);
 
       // 센서 에러나면 20초에 한번씩 소리 나게
