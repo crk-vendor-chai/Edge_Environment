@@ -808,7 +808,8 @@ async function Payments(token, CardMethod) {
               const receiptResponse = await axios.post(
                 `${config.cardTerminalApi}/payment/rfid/receipt`,
                 {
-                  amount: String(finalAmount),
+                  // amount: String(finalAmount),
+                  amount: '5',
                   items: items.slice(0, 5),
                 },
                 { timeout: 10000 }
