@@ -88,6 +88,8 @@ async function DiskStatusAPI() {
 
 let CardErrorState = null;
 let lastNoticeCommandState = null;
+let cardTerminalStatusHttpOk = false;
+let deviceNoticeCleared = false;
 const DEVICE_ERROR_NOTICE = "장비에 문제가 생겼습니다";
 
 // Notice commands are separate from GET /status and are sent only when device health changes.
@@ -103,6 +105,9 @@ async function updateDeviceNotice(shouldShowNotice) {
       : await axios.delete(`${config.cardTerminalApi}/status/notice`, {
           timeout: 5000,
         });
+    if (response.status === 200) {
+      deviceNoticeCleared = !shouldShowNotice;
+    }
 
     if (Number(response.data?.response_code) !== 0) {
       console.warn("[CARD-DEVICE] Notice request PC response:", {
@@ -138,7 +143,7 @@ async function CardTerminalStatusAPI(CatResCodePayment) {
   try {
     console.log(`[CARD-DEVICE] Sending Request to ${config.cardTerminalApi}`);
 
-    if (CatResCodePayment == "178") { // payment에서 보내는 단말기 에러
+    if (CatResCodePayment != null) { // payment에서 보내는 단말기 응답 코드를 상태 코드로 매핑
       switch (String(CatResCodePayment)) {
         case "176": return "32";
         case "177": return "33";
@@ -159,6 +164,7 @@ async function CardTerminalStatusAPI(CatResCodePayment) {
       timeout: 30000 // 30초 안에 응답 없으면 에러 처리
 
     });
+    cardTerminalStatusHttpOk = response.status === 200;
     console.log('[CARD-DEVICE]', response.data)
 
     // API 응답 확인
@@ -180,8 +186,10 @@ async function CardTerminalStatusAPI(CatResCodePayment) {
       CardTerminalState = '37'
     } else if (CatResCode == "182" || CatStatus == 'ERROR_VAN') { // 카드 단말기 네트워크 이상
       CardTerminalState = '31'
-    } else if (CatResCode == "192" || CatResCode == "193" || CatStatus == 'ERROR_POS' || CatStatus == 'NETWORK_ERROR') { 
-      // 카드 단말기 통신 불량
+    } else if (CatResCode == "192" || CatStatus == 'ERROR_POS') {
+      // ERROR_POS is reported as a health error only after the notice was cleared.
+      CardTerminalState = deviceNoticeCleared ? '30' : '39'
+    } else if (CatResCode == "193" || CatStatus == 'NETWORK_ERROR') {
       CardTerminalState = '30'
     } else if (CatResCode == "255" || CatStatus == 'ERROR') { // 기타 오류
       CardTerminalState = '38'
@@ -194,6 +202,7 @@ async function CardTerminalStatusAPI(CatResCodePayment) {
     }return CardTerminalState
   } catch (error) {
     // 카드 단말기에서 return이 없는 경우 -- timeout
+    cardTerminalStatusHttpOk = false;
     if (error.code === "ECONNREFUSED" || error.code === 'EHOSTUNREACH') {
       CardTerminalState = "30"
     } else if (error.response) {
@@ -409,17 +418,17 @@ async function HealthMqtt() {
       const LoadcellStatus = await LoadcellStatusAPI();
       const CameraStatus = await CameraStatusAPI();
       const EdgePCStatus = await EdgePCStatusAPI(DeadboltStatus, LoadcellStatus);
-      const hasDeviceError =
-        CardTerminalStatus !== '39' ||
+      const hasOperationalError =
+        !cardTerminalStatusHttpOk ||
         LoadcellStatus !== '29' ||
         DeadboltStatus !== '19' ||
         CameraStatus !== '09' ||
         EdgePCStatus !== '49';
-      // 30-second GET /status remains a status poll; notice requests are transition-triggered.
-      await updateDeviceNotice(hasDeviceError);
+      // HTTP 200 confirms the status API is reachable; response_code remains in health reporting.
+      await updateDeviceNotice(hasOperationalError);
 
       // 센서 에러나면 20초에 한번씩 소리 나게
-      if (hasDeviceError) {
+      if (hasOperationalError) {
         if (!sensorErrorVoiceInterval) {
           playSensorErrorVoice();
           sensorErrorVoiceInterval = setInterval(() => {
