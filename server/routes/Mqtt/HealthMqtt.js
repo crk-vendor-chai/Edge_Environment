@@ -87,12 +87,13 @@ async function DiskStatusAPI() {
 }
 
 let CardErrorState = null;
-let deviceNoticeActive = null;
+let deviceNoticeAttemptedState = null;
 const DEVICE_ERROR_NOTICE = "장비에 문제가 생겼습니다";
 
-// 단말기 안내문구는 상태가 바뀔 때만 갱신하고, 실패한 요청은 다음 health check에서 재시도한다.
+// Avoid repeating the same notice command every health-check cycle if the terminal rejects it.
 async function updateDeviceNotice(hasDeviceError) {
-  if (deviceNoticeActive === hasDeviceError) return;
+  if (deviceNoticeAttemptedState === hasDeviceError) return;
+  deviceNoticeAttemptedState = hasDeviceError;
 
   try {
     const response = hasDeviceError
@@ -104,12 +105,14 @@ async function updateDeviceNotice(hasDeviceError) {
         });
 
     if (Number(response.data?.response_code) !== 0) {
-      throw new Error(
-        `Unexpected response_code: ${response.data?.response_code ?? "missing"}`
-      );
+      console.error("[CARD-DEVICE] Notice command rejected:", {
+        requestedState: hasDeviceError ? "set" : "clear",
+        httpStatus: response.status,
+        response: response.data,
+      });
+      return;
     }
 
-    deviceNoticeActive = hasDeviceError;
     console.log(
       `[CARD-DEVICE] Notice ${hasDeviceError ? "set" : "cleared"}:`,
       response.data
