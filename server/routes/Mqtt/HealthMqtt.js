@@ -87,6 +87,40 @@ async function DiskStatusAPI() {
 }
 
 let CardErrorState = null;
+let deviceNoticeActive = null;
+const DEVICE_ERROR_NOTICE = "장비에 문제가 생겼습니다";
+
+// 단말기 안내문구는 상태가 바뀔 때만 갱신하고, 실패한 요청은 다음 health check에서 재시도한다.
+async function updateDeviceNotice(hasDeviceError) {
+  if (deviceNoticeActive === hasDeviceError) return;
+
+  try {
+    const response = hasDeviceError
+      ? await axios.put(`${config.cardTerminalApi}/status/notice`, {
+          message: DEVICE_ERROR_NOTICE,
+        }, { timeout: 5000 })
+      : await axios.delete(`${config.cardTerminalApi}/status/notice`, {
+          timeout: 5000,
+        });
+
+    if (Number(response.data?.response_code) !== 0) {
+      throw new Error(
+        `Unexpected response_code: ${response.data?.response_code ?? "missing"}`
+      );
+    }
+
+    deviceNoticeActive = hasDeviceError;
+    console.log(
+      `[CARD-DEVICE] Notice ${hasDeviceError ? "set" : "cleared"}:`,
+      response.data
+    );
+  } catch (error) {
+    console.error(
+      `[CARD-DEVICE] Failed to ${hasDeviceError ? "set" : "clear"} notice:`,
+      error.response?.data || error.message
+    );
+  }
+}
 
 // payment 처리 중 발생한 card terminal 오류 코드를 저장 (다음 health check 1회에 반영 후 초기화)
 function CardTerminalErrorState(code) {
@@ -350,9 +384,16 @@ async function HealthMqtt() {
       const LoadcellStatus = await LoadcellStatusAPI();
       const CameraStatus = await CameraStatusAPI();
       const EdgePCStatus = await EdgePCStatusAPI(DeadboltStatus, LoadcellStatus);
+      const hasDeviceError =
+        CardTerminalStatus !== '39' ||
+        LoadcellStatus !== '29' ||
+        DeadboltStatus !== '19' ||
+        CameraStatus !== '09' ||
+        EdgePCStatus !== '49';
+      await updateDeviceNotice(hasDeviceError);
 
       // 센서 에러나면 20초에 한번씩 소리 나게
-      if (CardTerminalStatus !== '39' || LoadcellStatus !== '29' || DeadboltStatus !== '19' || CameraStatus !== '09' || EdgePCStatus !== '49') {
+      if (hasDeviceError) {
         if (!sensorErrorVoiceInterval) {
           playSensorErrorVoice();
           sensorErrorVoiceInterval = setInterval(() => {

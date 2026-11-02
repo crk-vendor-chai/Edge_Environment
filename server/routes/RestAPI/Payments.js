@@ -804,6 +804,33 @@ async function Payments(token, CardMethod) {
                 token
               )
           } else if (paymentResponse && CardMethod === "R") {
+            try {
+              const receiptResponse = await axios.post(
+                `${config.cardTerminalApi}/payment/rfid/receipt`,
+                {
+                  amount: String(finalAmount),
+                  items: items.slice(0, 5),
+                },
+                { timeout: 10000 }
+              );
+
+              if (
+                receiptResponse.status !== 202 ||
+                receiptResponse.data?.status !== "sent"
+              ) {
+                console.error(
+                  "[RFID-RECEIPT] Unexpected response:",
+                  receiptResponse.status,
+                  receiptResponse.data
+                );
+              }
+            } catch (error) {
+              console.error(
+                "[RFID-RECEIPT] Request failed:",
+                error.response?.data || error.message
+              );
+            }
+
             // RFID 결제 정보 전송
             const paymentAt = new Date().toISOString().replace("Z", "");
             console.log("[PAYMENT] Success:", paymentResponse);
