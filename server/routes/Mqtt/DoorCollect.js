@@ -204,7 +204,8 @@ function publishDoorAck({
   const responsePayload = {
     HEADER: {
       IF_ID: "IF_04",
-      IF_SYSID: uuidv4(),
+      // IF_SYSID: uuidv4(),
+      IF_SYSID: ifSysId,
       IF_HOST: "CRKPNTCHAI",
       IF_DATE: timestamp,
     },
